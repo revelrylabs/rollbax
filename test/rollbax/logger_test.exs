@@ -18,11 +18,13 @@ defmodule Rollbax.LoggerTest do
       Application.delete_env(:rollbax, :reporters)
     end
 
-    :error_logger.add_report_handler(Rollbax.Logger)
+    # :error_logger.add_report_handler(Rollbax.Logger)
+    LoggerBackends.add(Rollbax.Logger)
 
     on_exit(fn ->
       RollbarAPI.stop()
-      :error_logger.delete_report_handler(Rollbax.Logger)
+      # :error_logger.delete_report_handler(Rollbax.Logger)
+      LoggerBackends.remove(Rollbax.Logger)
     end)
   end
 

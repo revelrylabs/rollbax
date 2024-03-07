@@ -40,7 +40,8 @@ defmodule Rollbax.Mixfile do
       {:jason, "~> 1.0"},
       {:ex_doc, "~> 0.18", only: :dev, runtime: false},
       {:plug, "~> 1.4", only: :test},
-      {:cowboy, "~> 1.1", only: :test}
+      {:cowboy, "~> 1.1", only: :test},
+      {:logger_backends, "~> 1.0"}
     ]
   end
 
@@ -54,7 +55,7 @@ defmodule Rollbax.Mixfile do
 
   defp env() do
     [
-      enabled: true,
+      enabled: false,
       custom: %{},
       api_endpoint: @default_api_endpoint,
       enable_crash_reports: false,

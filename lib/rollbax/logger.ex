@@ -48,11 +48,13 @@ defmodule Rollbax.Logger do
   """
 
   @behaviour :gen_event
+  require Logger
 
   defstruct [:reporters]
 
   @doc false
   def init(_args) do
+    IO.puts("Rollbax.Logger is starting")
     reporters = Application.get_env(:rollbax, :reporters, [Rollbax.Reporter.Standard])
     {:ok, %__MODULE__{reporters: reporters}}
   end

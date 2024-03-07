@@ -68,6 +68,8 @@ defmodule Rollbax do
   """
 
   use Application
+  require LoggerBackends
+  require Logger
 
   @allowed_message_levels [:critical, :error, :warning, :info, :debug]
 
@@ -86,7 +88,7 @@ defmodule Rollbax do
     if config[:enable_crash_reports] do
       # We do this because the handler will read `:reporters` out of the app's environment.
       Application.put_env(:rollbax, :reporters, config[:reporters])
-      :error_logger.add_report_handler(Rollbax.Logger)
+      LoggerBackends.add(Rollbax.Logger)
     end
 
     children = [
