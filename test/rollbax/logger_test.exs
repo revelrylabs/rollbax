@@ -3,6 +3,7 @@ defmodule Rollbax.LoggerTest do
 
   setup_all do
     {:ok, pid} = start_rollbax_client("token1", "test")
+    start_logger_backends()
 
     on_exit(fn ->
       ensure_rollbax_client_down(pid)

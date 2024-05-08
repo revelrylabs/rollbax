@@ -62,13 +62,18 @@ defmodule Rollbax.Logger do
   @doc false
   def handle_event(event, state)
 
+  # NOTE: figure out what this is really supposed to do
+  def handle_event(:flush, state), do: {:ok, state}
+
   # If the event is on a different node than the current node, we ignore it.
   def handle_event({_level, gl, _event}, state)
       when node(gl) != node() do
+    IO.inspect(%{self: node(), originator: gl}, label: "different node")
     {:ok, state}
   end
 
   def handle_event({level, _gl, event}, %__MODULE__{reporters: reporters} = state) do
+    IO.inspect(%{reporters: reporters, level: level, event: event}, label: "received an event")
     :ok = run_reporters(reporters, level, event)
     {:ok, state}
   end

@@ -10,12 +10,13 @@ defmodule Rollbax.Reporter.Standard do
     handle_error_format(format, data)
   end
 
-  def handle_event(_type, _event) do
+  def handle_event(level, event) do
+    IO.inspect(%{level: level, event: event}, label: "unhandled event shape")
     :next
   end
 
   # Errors in a GenServer.
-  defp handle_error_format('** Generic server ' ++ _, [name, last_message, state, reason]) do
+  defp handle_error_format(~c"** Generic server " ++ _, [name, last_message, state, reason]) do
     {class, message, stacktrace} = format_as_exception(reason, "GenServer terminating")
 
     %Rollbax.Exception{
@@ -31,7 +32,7 @@ defmodule Rollbax.Reporter.Standard do
   end
 
   # Errors in a GenEvent handler.
-  defp handle_error_format('** gen_event handler ' ++ _, [
+  defp handle_error_format(~c"** gen_event handler " ++ _, [
          name,
          manager,
          last_message,
@@ -54,7 +55,7 @@ defmodule Rollbax.Reporter.Standard do
   end
 
   # Errors in a task.
-  defp handle_error_format('** Task ' ++ _, [name, starter, function, arguments, reason]) do
+  defp handle_error_format(~c"** Task " ++ _, [name, starter, function, arguments, reason]) do
     {class, message, stacktrace} = format_as_exception(reason, "Task terminating")
 
     %Rollbax.Exception{
@@ -70,8 +71,8 @@ defmodule Rollbax.Reporter.Standard do
     }
   end
 
-  defp handle_error_format('** State machine ' ++ _ = message, data) do
-    if charlist_contains?(message, 'Callback mode') do
+  defp handle_error_format(~c"** State machine " ++ _ = message, data) do
+    if charlist_contains?(message, ~c"Callback mode") do
       :next
     else
       handle_gen_fsm_error(data)
@@ -79,7 +80,7 @@ defmodule Rollbax.Reporter.Standard do
   end
 
   # Errors in a regular process.
-  defp handle_error_format('Error in process ' ++ _, [pid, {reason, stacktrace}]) do
+  defp handle_error_format(~c"Error in process " ++ _, [pid, {reason, stacktrace}]) do
     exception = Exception.normalize(:error, reason)
 
     %Rollbax.Exception{

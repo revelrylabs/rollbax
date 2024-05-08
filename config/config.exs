@@ -1,4 +1,4 @@
-use Mix.Config
+import Config
 
 config :ex_unit,
   assert_receive_timeout: 800,
@@ -12,12 +12,10 @@ config :rollbax, :logger, [
     :rollbax_handler,
     Rollbax.Logger,
     %{
-      config: %{
-      },
+      config: %{},
       formatter: Logger.Formatter.new()
     }
   }
 ]
 
-config :logger, Rollbax.Logger,
-  :discard_threshold_periodic_check
+config :logger, Rollbax.Logger, :discard_threshold_periodic_check
