@@ -18,13 +18,14 @@ defmodule ExUnit.RollbaxCase do
         api_endpoint \\ "http://localhost:4004",
         proxy \\ nil
       ) do
-    Rollbax.Client.start_link(
-      api_endpoint: api_endpoint,
-      access_token: token,
-      environment: env,
-      enabled: true,
-      custom: custom,
-      proxy: proxy
+    start_supervised(
+      {Rollbax.Client,
+       api_endpoint: api_endpoint,
+       access_token: token,
+       environment: env,
+       enabled: true,
+       custom: custom,
+       proxy: proxy}
     )
   end
 
@@ -38,6 +39,10 @@ defmodule ExUnit.RollbaxCase do
 
   def start_logger_backends do
     Application.ensure_started(:logger_backends)
+  end
+
+  def stop_logger_backends do
+    Application.stop(:logger_backends)
   end
 
   def capture_log(fun) do

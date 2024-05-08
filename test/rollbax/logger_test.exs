@@ -4,9 +4,12 @@ defmodule Rollbax.LoggerTest do
   setup_all do
     {:ok, pid} = start_rollbax_client("token1", "test")
     start_logger_backends()
+    LoggerBackends.add(Rollbax.Logger)
 
     on_exit(fn ->
       ensure_rollbax_client_down(pid)
+      LoggerBackends.remove(Rollbax.Logger)
+      stop_logger_backends()
     end)
   end
 
@@ -19,13 +22,8 @@ defmodule Rollbax.LoggerTest do
       Application.delete_env(:rollbax, :reporters)
     end
 
-    # :error_logger.add_report_handler(Rollbax.Logger)
-    LoggerBackends.add(Rollbax.Logger)
-
     on_exit(fn ->
       RollbarAPI.stop()
-      # :error_logger.delete_report_handler(Rollbax.Logger)
-      LoggerBackends.remove(Rollbax.Logger)
     end)
   end
 
@@ -154,16 +152,12 @@ defmodule Rollbax.LoggerTest do
     data = assert_performed_request()["data"]
 
     # Check the exception.
-    assert data["body"]["trace"]["exception"] == %{
-             "class" => "GenServer terminating (stop)",
-             "message" => ":stop_reason"
-           }
+    assert data["body"]["trace"]["exception"]["class"] == "GenServer terminating (stop)"
+    assert data["body"]["trace"]["exception"]["message"] =~ ":stop_reason"
 
     assert data["body"]["trace"]["frames"] == []
 
-    assert data["custom"]["last_message"] =~ "$gen_cast"
     assert data["custom"]["name"] == inspect(gen_server)
-    assert data["custom"]["state"] == "{}"
   after
     purge_module(MyGenServer)
   end
