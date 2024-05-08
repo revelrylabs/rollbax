@@ -7,19 +7,49 @@ defmodule Rollbax.Reporter.Standard do
   @behaviour Rollbax.Reporter
 
   def handle_event(:error, {_Logger, msg, _timestamp, meta}) do
-    # NOTE: this was based on the GenServer stop error... (test L136)
-    # but I think we ultimately _will_ want another formatting fn with separate clauses for different things
-    %Rollbax.Exception{
-      class: class(msg),
-      message: IO.iodata_to_binary(msg),
-      stacktrace: stacktrace(meta[:crash_reason]),
-      custom: custom(msg, meta)
-    }
+    format_exception(msg, meta)
   end
 
   def handle_event(level, event) do
     IO.inspect(%{level: level, event: event}, label: "unhandled event shape")
     :next
+  end
+
+  defp format_exception(["GenServer ", pid, " terminating", details | _] = msg, meta) do
+    case meta[:crash_reason] do
+      {exception, stacktrace}
+      when is_list(stacktrace) and is_exception(exception) ->
+        %Rollbax.Exception{
+          class: "GenServer terminating (#{exception_name(exception)})",
+          message: Exception.message(exception),
+          stacktrace: stacktrace(meta[:crash_reason]),
+          custom: %{
+            "name" => pid
+          }
+        }
+
+      {:stop_reason, []} ->
+        %Rollbax.Exception{
+          class: "GenServer terminating (stop)",
+          message: IO.iodata_to_binary(msg),
+          stacktrace: stacktrace(meta[:crash_reason]),
+          custom: %{
+            "name" => pid
+          }
+        }
+
+      _other ->
+        [_prefix | message] = hd(details)
+
+        %Rollbax.Exception{
+          class: "GenServer terminating",
+          message: message,
+          stacktrace: stacktrace(meta[:crash_reason]),
+          custom: %{
+            "name" => pid
+          }
+        }
+    end
   end
 
   # Errors in a GenServer.
@@ -165,16 +195,9 @@ defmodule Rollbax.Reporter.Standard do
     :string.str(charlist, part) != 0
   end
 
-  defp class(["GenServer ", _pid, " terminating" | _] = _msg) do
-    "GenServer terminating (stop)"
-  end
-
   defp stacktrace({_, trace} = _crash_reason) when is_list(trace), do: trace
   defp stacktrace(_crash_reason), do: nil
 
-  defp custom(["GenServer ", pid, " terminating" | _] = _msg, _meta) do
-    %{
-      "name" => pid
-    }
-  end
+  defp exception_name(%{__struct__: struct}), do: inspect(struct)
+  defp exception_name(_), do: "Unknown"
 end
