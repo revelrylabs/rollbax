@@ -16,6 +16,7 @@ defmodule Rollbax.Reporter.Standard do
   end
 
   defp format_exception(["GenServer ", pid, " terminating", details | _] = msg, meta) do
+    # TODO: maybe need to figure out how to extract the last message, too?
     case meta[:crash_reason] do
       {exception, stacktrace}
       when is_list(stacktrace) and is_exception(exception) ->
@@ -39,6 +40,7 @@ defmodule Rollbax.Reporter.Standard do
         }
 
       _other ->
+        # TODO: this might be crashy!
         [_prefix | message] = hd(details)
 
         %Rollbax.Exception{
