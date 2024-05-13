@@ -55,9 +55,8 @@ defmodule Rollbax.LoggerTest do
     assert [frame] = find_frames_for_current_file(data["body"]["trace"]["frames"])
     assert frame["method"] == "MyGenServer.handle_cast/2"
 
-    # assert data["custom"]["last_message"] =~ "$gen_cast"
+    assert data["custom"]["last_message"] =~ "$gen_cast"
     assert data["custom"]["name"] == inspect(gen_server)
-    # assert data["custom"]["state"] == "{}"
   after
     purge_module(MyGenServer)
   end
@@ -90,9 +89,8 @@ defmodule Rollbax.LoggerTest do
     assert [frame] = find_frames_for_current_file(data["body"]["trace"]["frames"])
     assert frame["method"] == "MyGenServer.handle_cast/2"
 
-    # assert data["custom"]["last_message"] =~ "$gen_cast"
+    assert data["custom"]["last_message"] =~ "$gen_cast"
     assert data["custom"]["name"] == inspect(gen_server)
-    # assert data["custom"]["state"] == "{}"
   after
     purge_module(MyGenServer)
   end
@@ -125,9 +123,8 @@ defmodule Rollbax.LoggerTest do
     assert [frame] = find_frames_for_current_file(data["body"]["trace"]["frames"])
     assert frame["method"] == "MyGenServer.handle_cast/2"
 
-    # assert data["custom"]["last_message"] =~ "$gen_cast"
+    assert data["custom"]["last_message"] =~ "$gen_cast"
     assert data["custom"]["name"] == inspect(gen_server)
-    # assert data["custom"]["state"] == "{}"
   after
     purge_module(MyGenServer)
   end
@@ -156,7 +153,7 @@ defmodule Rollbax.LoggerTest do
     assert data["body"]["trace"]["exception"]["message"] =~ ":stop_reason"
 
     assert data["body"]["trace"]["frames"] == []
-    # NOTE: may want to incorporate the last message somehow... seems useful!
+    assert data["custom"]["last_message"] =~ "$gen_cast"
 
     assert data["custom"]["name"] == inspect(gen_server)
   after

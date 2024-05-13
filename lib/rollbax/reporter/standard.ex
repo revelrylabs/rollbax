@@ -15,7 +15,12 @@ defmodule Rollbax.Reporter.Standard do
     :next
   end
 
-  defp format_exception(["GenServer ", pid, " terminating", details | _] = msg, meta) do
+  defp format_exception(
+         ["GenServer ", pid, " terminating", details | last_message_parts] = msg,
+         meta
+       ) do
+    last_message = gen_server_last_message(last_message_parts)
+
     # TODO: maybe need to figure out how to extract the last message, too?
     case meta[:crash_reason] do
       {exception, stacktrace}
@@ -25,7 +30,8 @@ defmodule Rollbax.Reporter.Standard do
           message: Exception.message(exception),
           stacktrace: stacktrace(meta[:crash_reason]),
           custom: %{
-            "name" => pid
+            "name" => pid,
+            "last_message" => last_message
           }
         }
 
@@ -35,23 +41,93 @@ defmodule Rollbax.Reporter.Standard do
           message: IO.iodata_to_binary(msg),
           stacktrace: stacktrace(meta[:crash_reason]),
           custom: %{
-            "name" => pid
+            "name" => pid,
+            "last_message" => last_message
           }
         }
 
       _other ->
-        # TODO: this might be crashy!
-        [_prefix | message] = hd(details)
+        exception_message =
+          case details do
+            [[_prefix | message] | _] -> message
+            _ -> "Unknown Exception"
+          end
 
         %Rollbax.Exception{
           class: "GenServer terminating",
-          message: message,
+          message: exception_message,
           stacktrace: stacktrace(meta[:crash_reason]),
           custom: %{
-            "name" => pid
+            "name" => pid,
+            "last_message" => last_message
           }
         }
     end
+  end
+
+  defp format_exception(
+         ["Task " <> _ = _error, details | function_details] = _msg,
+         meta
+       ) do
+    {function, args} = parse_function_and_args(function_details)
+
+    case meta[:crash_reason] do
+      {exception, stacktrace}
+      when is_list(stacktrace) and is_exception(exception) ->
+        %Rollbax.Exception{
+          class: "Task terminating (#{exception_name(exception)})",
+          message: Exception.message(exception),
+          stacktrace: stacktrace(meta[:crash_reason]),
+          custom: %{
+            "name" => inspect(meta[:pid]),
+            "started_from" => inspect(hd(meta[:callers] || [])),
+            "function" => function,
+            "arguments" => args
+          }
+        }
+
+      _other ->
+        exception_message =
+          case details do
+            [[_prefix | message] | _] -> message
+            _ -> "Unknown Exception"
+          end
+
+        %Rollbax.Exception{
+          class: "Task terminating",
+          message: exception_message,
+          stacktrace: stacktrace(meta[:crash_reason]),
+          custom: %{
+            "name" => inspect(meta[:pid]),
+            "started_from" => inspect(hd(meta[:callers] || [])),
+            "function" => function,
+            "arguments" => args
+          }
+        }
+    end
+  end
+
+  defp format_exception(
+         ["Process ", pid, " raised an exception" | error_details],
+         meta
+       ) do
+    {message, name} =
+      case meta[:crash_reason] do
+        {exception, stacktrace} when is_exception(exception) and is_list(stacktrace) ->
+          {Exception.message(exception), inspect(exception.__struct__)}
+
+        _ ->
+          {IO.iodata_to_binary(error_details), "Unknown Exception"}
+      end
+
+    %Rollbax.Exception{
+      class: "error in process (#{name})",
+      message: message,
+      stacktrace: stacktrace(meta[:crash_reason]),
+      custom: %{
+        "pid" => pid
+      }
+    }
   end
 
   # Errors in a GenServer.
@@ -202,4 +278,27 @@ defmodule Rollbax.Reporter.Standard do
 
   defp exception_name(%{__struct__: struct}), do: inspect(struct)
   defp exception_name(_), do: "Unknown"
+
+  defp gen_server_last_message(["\nLast message", _list, ": " | rest] = _message_parts) do
+    IO.iodata_to_binary(rest)
+  rescue
+    _ -> nil
+  end
+
+  defp gen_server_last_message([_first | rest] = _message_parts),
+    do: gen_server_last_message(rest)
+
+  defp gen_server_last_message(_), do: nil
+
+  defp parse_function_and_args(["\nFunction: " <> function, args | _rest] = _message_parts) do
+    parsed_args = String.replace(args, ~r/^\s*Args: /, "")
+    {function, parsed_args}
+  rescue
+    _ -> {nil, nil}
+  end
+
+  defp parse_function_and_args([_first | rest] = _message_parts),
+    do: parse_function_and_args(rest)
+
+  defp parse_function_and_args(_), do: {nil, nil}
 end
