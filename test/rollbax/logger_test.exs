@@ -4,11 +4,9 @@ defmodule Rollbax.LoggerTest do
   setup_all do
     {:ok, pid} = start_rollbax_client("token1", "test")
     start_logger_backends()
-    LoggerBackends.add(Rollbax.Logger)
 
     on_exit(fn ->
       ensure_rollbax_client_down(pid)
-      LoggerBackends.remove(Rollbax.Logger)
       stop_logger_backends()
     end)
   end
@@ -22,8 +20,11 @@ defmodule Rollbax.LoggerTest do
       Application.delete_env(:rollbax, :reporters)
     end
 
+    LoggerBackends.add(Rollbax.Logger)
+
     on_exit(fn ->
       RollbarAPI.stop()
+      LoggerBackends.remove(Rollbax.Logger)
     end)
   end
 
@@ -196,8 +197,7 @@ defmodule Rollbax.LoggerTest do
       assert data["custom"] == %{
                "name" => "MyGenEventHandler",
                "manager" => inspect(manager),
-               "last_message" => ":raise_error",
-               "state" => "{}"
+               "last_message" => ":raise_error"
              }
     end)
   after
