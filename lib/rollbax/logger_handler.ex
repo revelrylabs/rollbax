@@ -4,6 +4,8 @@ defmodule Rollbax.LoggerHandler do
 
   # TODO: explain how this works with configs and reporters and everything else...
           see the moduledoc on the old Rollbax.Logger module
+
+          also need to fix up mix.exs and versioning, as well as check the rest of the docs
   """
 
   @doc """
@@ -50,6 +52,7 @@ defmodule Rollbax.LoggerHandler do
   end
 
   defp run_reporters([_ | _], event) do
+    # remove or convert to a Logger message after this has been tested extensively
     IO.inspect(event, label: "UNHANDLED EVENT SHAPE")
     :error
   end
