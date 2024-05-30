@@ -37,14 +37,6 @@ defmodule ExUnit.RollbaxCase do
     end
   end
 
-  def start_logger_backends do
-    Application.ensure_started(:logger_backends)
-  end
-
-  def stop_logger_backends do
-    Application.stop(:logger_backends)
-  end
-
   def capture_log(fun) do
     ExUnit.CaptureIO.capture_io(:user, fn ->
       fun.()

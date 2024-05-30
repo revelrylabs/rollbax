@@ -3,28 +3,22 @@ defmodule Rollbax.LoggerTest do
 
   setup_all do
     {:ok, pid} = start_rollbax_client("token1", "test")
-    start_logger_backends()
 
     on_exit(fn ->
       ensure_rollbax_client_down(pid)
-      stop_logger_backends()
     end)
   end
 
   setup context do
     {:ok, _pid} = RollbarAPI.start(self())
 
-    if reporters = context[:reporters] do
-      Application.put_env(:rollbax, :reporters, reporters)
-    else
-      Application.delete_env(:rollbax, :reporters)
-    end
+    config = if context[:reporters], do: %{reporters: context[:reporters]}, else: %{}
 
-    LoggerBackends.add(Rollbax.Logger)
+    :logger.add_handler(:rollbax_handler, Rollbax.LoggerHandler, config)
 
     on_exit(fn ->
       RollbarAPI.stop()
-      LoggerBackends.remove(Rollbax.Logger)
+      :logger.remove_handler(:rollbax_handler)
     end)
   end
 
