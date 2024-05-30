@@ -101,6 +101,11 @@ defmodule Rollbax.Reporter.Standard do
     }
   end
 
+  # ignore other messages, such as those logged directly by the application
+  defp format_exception(_msg, _meta) do
+    :next
+  end
+
   defp stacktrace({_, trace} = _crash_reason) when is_list(trace), do: trace
   defp stacktrace(_crash_reason), do: nil
 
