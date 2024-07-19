@@ -7,6 +7,7 @@ defmodule Rollbax.Reporter.Standard do
   @behaviour Rollbax.Reporter
 
   def handle_event(:error, {_Logger, msg, _timestamp, meta}) do
+    # msg = List.first(msg)
     format_exception(msg, meta)
   end
 
@@ -103,6 +104,7 @@ defmodule Rollbax.Reporter.Standard do
 
   # ignore other messages, such as those logged directly by the application
   defp format_exception(_msg, _meta) do
+    IO.inspect("or am I here")
     :next
   end
 

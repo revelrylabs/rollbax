@@ -53,11 +53,12 @@ end
 
 defmodule RollbarAPI do
   alias Plug.Conn
-  alias Plug.Adapters.Cowboy
+  alias Plug.Cowboy
 
   import Conn
 
   def start(pid, port \\ 4004) do
+    Application.ensure_all_started(:telemetry)
     Cowboy.http(__MODULE__, [test: pid], port: port)
   end
 

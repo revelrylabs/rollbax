@@ -40,8 +40,10 @@ defmodule Rollbax.Mixfile do
       {:jason, "~> 1.0"},
       {:ex_doc, "~> 0.18", only: :dev, runtime: false},
       {:plug, "~> 1.4", only: :test},
-      {:cowboy, "~> 1.1", only: :test},
-      {:logger_backends, "~> 1.0"}
+      {:cowboy, "~> 2.0", only: :test},
+      {:logger_backends, "~> 1.0"},
+      {:plug_cowboy, "~> 2.0", only: :test},
+      {:telemetry, "~> 1.2", only: :test}
     ]
   end
 
