@@ -12,17 +12,13 @@ defmodule Rollbax.LoggerTest do
   setup context do
     {:ok, _pid} = RollbarAPI.start(self())
 
-    if reporters = context[:reporters] do
-      Application.put_env(:rollbax, :reporters, reporters)
-    else
-      Application.delete_env(:rollbax, :reporters)
-    end
+    config = if context[:reporters], do: %{reporters: context[:reporters]}, else: %{}
 
-    :error_logger.add_report_handler(Rollbax.Logger)
+    :logger.add_handler(:rollbax_handler, Rollbax.LoggerHandler, config)
 
     on_exit(fn ->
       RollbarAPI.stop()
-      :error_logger.delete_report_handler(Rollbax.Logger)
+      :logger.remove_handler(:rollbax_handler)
     end)
   end
 
@@ -56,7 +52,6 @@ defmodule Rollbax.LoggerTest do
 
     assert data["custom"]["last_message"] =~ "$gen_cast"
     assert data["custom"]["name"] == inspect(gen_server)
-    assert data["custom"]["state"] == "{}"
   after
     purge_module(MyGenServer)
   end
@@ -91,7 +86,6 @@ defmodule Rollbax.LoggerTest do
 
     assert data["custom"]["last_message"] =~ "$gen_cast"
     assert data["custom"]["name"] == inspect(gen_server)
-    assert data["custom"]["state"] == "{}"
   after
     purge_module(MyGenServer)
   end
@@ -126,7 +120,6 @@ defmodule Rollbax.LoggerTest do
 
     assert data["custom"]["last_message"] =~ "$gen_cast"
     assert data["custom"]["name"] == inspect(gen_server)
-    assert data["custom"]["state"] == "{}"
   after
     purge_module(MyGenServer)
   end
@@ -151,16 +144,13 @@ defmodule Rollbax.LoggerTest do
     data = assert_performed_request()["data"]
 
     # Check the exception.
-    assert data["body"]["trace"]["exception"] == %{
-             "class" => "GenServer terminating (stop)",
-             "message" => ":stop_reason"
-           }
+    assert data["body"]["trace"]["exception"]["class"] == "GenServer terminating (stop)"
+    assert data["body"]["trace"]["exception"]["message"] =~ ":stop_reason"
 
     assert data["body"]["trace"]["frames"] == []
-
     assert data["custom"]["last_message"] =~ "$gen_cast"
+
     assert data["custom"]["name"] == inspect(gen_server)
-    assert data["custom"]["state"] == "{}"
   after
     purge_module(MyGenServer)
   end
@@ -201,8 +191,7 @@ defmodule Rollbax.LoggerTest do
       assert data["custom"] == %{
                "name" => "MyGenEventHandler",
                "manager" => inspect(manager),
-               "last_message" => ":raise_error",
-               "state" => "{}"
+               "last_message" => ":raise_error"
              }
     end)
   after

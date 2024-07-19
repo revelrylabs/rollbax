@@ -35,9 +35,9 @@ defmodule Rollbax do
     * `:api_endpoint` - (binary) the Rollbar endpoint to report exceptions and messages to.
       Defaults to `https://api.rollbar.com/api/1/item/`.
 
-    * `:enable_crash_reports` - see `Rollbax.Logger`.
+    * `:enable_crash_reports` - see `Rollbax.LoggerHandler`.
 
-    * `:reporters` - see `Rollbax.Logger`.
+    * `:reporters` - see `Rollbax.LoggerHandler`.
 
     * `:proxy` - (binary) a proxy that can be used to connect to the Rollbar host. For more
       information about the format of the proxy, check the proxy URL description in the
@@ -68,6 +68,7 @@ defmodule Rollbax do
   """
 
   use Application
+  require Logger
 
   @allowed_message_levels [:critical, :error, :warning, :info, :debug]
 
@@ -84,9 +85,9 @@ defmodule Rollbax do
     end
 
     if config[:enable_crash_reports] do
-      # We do this because the handler will read `:reporters` out of the app's environment.
-      Application.put_env(:rollbax, :reporters, config[:reporters])
-      :error_logger.add_report_handler(Rollbax.Logger)
+      :logger.add_handler(:rollbax_handler, Rollbax.LoggerHandler, %{
+        reporters: config[:reporters]
+      })
     end
 
     children = [
