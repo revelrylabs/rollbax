@@ -38,8 +38,8 @@ defmodule Rollbax.LoggerHandler do
     |> Map.put_new(:initialized, true)
   end
 
+
   defp run_reporters([reporter | rest], %{level: level, meta: meta, msg: {:string, msg}} = event) do
-    # TODO: is there a good reason to preserve compat with the shape of the event used by LoggerBackend?
     case reporter.handle_event(level, {Logger, msg, meta[:time], meta}) do
       %Rollbax.Exception{} = exception ->
         Rollbax.report_exception(exception)
