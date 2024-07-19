@@ -7,8 +7,9 @@ defmodule Rollbax.Reporter.Standard do
   @behaviour Rollbax.Reporter
 
   def handle_event(:error, {_Logger, msg, _timestamp, meta}) do
-    # msg = List.first(msg)
-    format_exception(msg, meta)
+    msg
+    |> process_error()
+    |> format_exception(meta)
   end
 
   def handle_event(_level, _event) do
@@ -104,8 +105,17 @@ defmodule Rollbax.Reporter.Standard do
 
   # ignore other messages, such as those logged directly by the application
   defp format_exception(_msg, _meta) do
-    IO.inspect("or am I here")
     :next
+  end
+
+  # Plug errors seem to have an extra level of nesting that we need to remove before
+  # parsing the message.
+  defp process_error(error) when is_list(hd(error)) do
+    hd(error)
+  end
+
+  defp process_error(error) do
+    error
   end
 
   defp stacktrace({_, trace} = _crash_reason) when is_list(trace), do: trace
