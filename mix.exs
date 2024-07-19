@@ -20,7 +20,7 @@ defmodule Rollbax.Mixfile do
       docs: [
         main: "Rollbax",
         source_ref: "v#{@version}",
-        source_url: "https://github.com/elixir-addicts/rollbax",
+        source_url: "https://github.com/ForzaElixir/rollbax",
         extras: ["pages/Using Rollbax in Plug-based applications.md"]
       ]
     ]
@@ -40,7 +40,9 @@ defmodule Rollbax.Mixfile do
       {:jason, "~> 1.0"},
       {:ex_doc, "~> 0.18", only: :dev, runtime: false},
       {:plug, "~> 1.4", only: :test},
-      {:cowboy, "~> 1.1", only: :test},
+      {:cowboy, "~> 2.0", only: :test},
+      {:plug_cowboy, "~> 2.0", only: :test},
+      {:telemetry, "~> 0.4", only: :test},
       {:logger_backends, "~> 1.0"}
     ]
   end
@@ -49,7 +51,7 @@ defmodule Rollbax.Mixfile do
     [
       maintainers: ["Aleksei Magusev", "Andrea Leopardi", "Eric Meadows-Jönsson"],
       licenses: ["ISC"],
-      links: %{"GitHub" => "https://github.com/elixir-addicts/rollbax"}
+      links: %{"GitHub" => "https://github.com/ForzaElixir/rollbax"}
     ]
   end
 
