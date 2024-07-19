@@ -9,7 +9,6 @@ defmodule Rollbax.LoggerHandler do
   5. Depending on the response, the event is either reported to Rollbar, the event is passed to the next reporter, or the event is ignored
 
   This allows customizing and processing of events via reporters before sending to Rollbar.
-
   """
 
   @doc """
