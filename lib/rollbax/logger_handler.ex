@@ -1,11 +1,14 @@
 defmodule Rollbax.LoggerHandler do
   @moduledoc """
-  An Erlang :logger handler that passes the actual Rollbax logging to its configured reporters
+  More information on this can be found in the documentation for `Logger.Handler`
 
-  # TODO: explain how this works with configs and reporters and everything else...
-          see the moduledoc on the old Rollbax.Logger module
+  1. This module can be added as a `:logger` handler
+  2. Log events come in to the `log/2` callback
+  3. It checks the configured reporters
+  4. Events are passed to the reporters for possible submission to Rollbar
+  5. Depending on the response, the event is either reported to Rollbar, the event is passed to the next reporter, or the event is ignored
 
-          also need to fix up mix.exs and versioning, as well as check the rest of the docs
+  This allows customizing and processing of events via reporters before sending to Rollbar.
   """
 
   @doc """
@@ -37,7 +40,6 @@ defmodule Rollbax.LoggerHandler do
     |> Map.put_new(:reporters, [Rollbax.Reporter.Standard])
     |> Map.put_new(:initialized, true)
   end
-
 
   defp run_reporters([reporter | rest], %{level: level, meta: meta, msg: {:string, msg}} = event) do
     case reporter.handle_event(level, {Logger, msg, meta[:time], meta}) do

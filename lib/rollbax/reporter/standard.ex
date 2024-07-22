@@ -16,6 +16,7 @@ defmodule Rollbax.Reporter.Standard do
     :next
   end
 
+  # Handles exceptions raised by GenServer callbacks
   defp format_exception(
          ["GenServer ", pid, " terminating", details | last_message_parts] = msg,
          meta
@@ -34,6 +35,7 @@ defmodule Rollbax.Reporter.Standard do
     }
   end
 
+  # Handles exceptions raised by GenEvent handlers
   defp format_exception(
          [
            ":gen_event handler ",
@@ -60,6 +62,7 @@ defmodule Rollbax.Reporter.Standard do
     }
   end
 
+  # Handles exceptions raised by Task callbacks
   defp format_exception(
          ["Task " <> _ = _error, details | function_details] = msg,
          meta
@@ -80,6 +83,7 @@ defmodule Rollbax.Reporter.Standard do
     }
   end
 
+  # Handles exceptions raised by processes
   defp format_exception(
          ["Process ", pid, " raised an exception" | error_details],
          meta
