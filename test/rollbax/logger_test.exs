@@ -12,7 +12,7 @@ defmodule Rollbax.LoggerTest do
   setup context do
     {:ok, _pid} = RollbarAPI.start(self())
 
-    config = if context[:reporters], do: %{reporters: context[:reporters]}, else: %{}
+    config = if context[:reporters], do: %{config: %{reporters: context[:reporters]}}, else: %{}
 
     :logger.add_handler(:rollbax_handler, Rollbax.LoggerHandler, config)
 

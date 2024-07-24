@@ -86,7 +86,7 @@ defmodule Rollbax do
 
     if config[:enable_crash_reports] do
       :logger.add_handler(:rollbax_handler, Rollbax.LoggerHandler, %{
-        reporters: config[:reporters]
+        config: %{reporters: config[:reporters]}
       })
     end
 

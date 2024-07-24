@@ -14,7 +14,7 @@ defmodule Rollbax.LoggerHandler do
   @doc """
   Handle a log message
   """
-  def log(event, %{reporters: reporters}) when is_list(reporters) do
+  def log(event, %{config: %{reporters: reporters}}) when is_list(reporters) do
     run_reporters(reporters, event)
   end
 
@@ -36,8 +36,13 @@ defmodule Rollbax.LoggerHandler do
   Create a valid Rollbax.LoggerHandler config by filling in any missing options
   """
   def initialize_config(existing) do
+    config =
+      existing
+      |> Map.get(:config, %{})
+      |> Map.put_new(:reporters, [Rollbax.Reporter.Standard])
+
     existing
-    |> Map.put_new(:reporters, [Rollbax.Reporter.Standard])
+    |> Map.put(:config, config)
     |> Map.put_new(:initialized, true)
   end
 
