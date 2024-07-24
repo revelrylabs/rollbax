@@ -59,12 +59,6 @@ defmodule Rollbax.LoggerHandler do
     end
   end
 
-  defp run_reporters([_ | _], event) do
-    # remove or convert to a Logger message after this has been tested extensively
-    IO.inspect(event, label: "UNHANDLED EVENT SHAPE")
-    :error
-  end
-
   # If no reporter ignored or reported this event, then we're gonna report this
   # as a Rollbar "message" with the same logic that Logger uses to translate
   # messages (so that it will have Elixir syntax when reported).
