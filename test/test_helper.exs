@@ -18,13 +18,14 @@ defmodule ExUnit.RollbaxCase do
         api_endpoint \\ "http://localhost:4004",
         proxy \\ nil
       ) do
-    Rollbax.Client.start_link(
-      api_endpoint: api_endpoint,
-      access_token: token,
-      environment: env,
-      enabled: true,
-      custom: custom,
-      proxy: proxy
+    start_supervised(
+      {Rollbax.Client,
+       api_endpoint: api_endpoint,
+       access_token: token,
+       environment: env,
+       enabled: true,
+       custom: custom,
+       proxy: proxy}
     )
   end
 
@@ -52,11 +53,12 @@ end
 
 defmodule RollbarAPI do
   alias Plug.Conn
-  alias Plug.Adapters.Cowboy
+  alias Plug.Cowboy
 
   import Conn
 
   def start(pid, port \\ 4004) do
+    Application.ensure_all_started(:telemetry)
     Cowboy.http(__MODULE__, [test: pid], port: port)
   end
 
