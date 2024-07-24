@@ -281,6 +281,7 @@ defmodule Rollbax.LoggerTest do
         children = [
           {Task, fn -> raise "boom" end}
         ]
+
         Supervisor.init(children, strategy: :one_for_one)
       end
     end
@@ -288,7 +289,11 @@ defmodule Rollbax.LoggerTest do
     capture_log(fn ->
       {:ok, _pid} = TestSupervisor.start_link([])
       data = assert_performed_request()["data"]
-      assert data["body"]["trace"]["exception"] == %{"class" => "Task terminating (RuntimeError)", "message" => "boom"}
+
+      assert data["body"]["trace"]["exception"] == %{
+               "class" => "Task terminating (RuntimeError)",
+               "message" => "boom"
+             }
     end)
   after
     purge_module(TestSupervisor)
