@@ -68,6 +68,7 @@ defmodule Rollbax do
   """
 
   use Application
+
   require Logger
 
   @allowed_message_levels [:critical, :error, :warning, :info, :debug]
@@ -97,7 +98,7 @@ defmodule Rollbax do
     Supervisor.start_link(children, strategy: :one_for_one)
   end
 
-  defp init_config() do
+  defp init_config do
     env = Application.get_all_env(:rollbax)
 
     config =
@@ -189,8 +190,7 @@ defmodule Rollbax do
   """
   @spec report(:error | :exit | :throw, any, [any], map, map) :: :ok
   def report(kind, value, stacktrace, custom \\ %{}, occurrence_data \\ %{})
-      when kind in [:error, :exit, :throw] and is_list(stacktrace) and is_map(custom) and
-             is_map(occurrence_data) do
+      when kind in [:error, :exit, :throw] and is_list(stacktrace) and is_map(custom) and is_map(occurrence_data) do
     {class, message} = Rollbax.Item.exception_class_and_message(kind, value)
 
     report_exception(%Rollbax.Exception{

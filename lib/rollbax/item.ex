@@ -7,8 +7,7 @@ defmodule Rollbax.Item do
 
   @spec draft(String.t() | nil, String.t() | nil, map) :: map
   def draft(token, environment, custom)
-      when (is_binary(token) or is_nil(token)) and (is_binary(environment) or is_nil(environment)) and
-             is_map(custom) do
+      when (is_binary(token) or is_nil(token)) and (is_binary(environment) or is_nil(environment)) and is_map(custom) do
     data = %{
       "server" => %{
         "host" => host()
@@ -27,8 +26,8 @@ defmodule Rollbax.Item do
 
   @spec compose(map, {String.t(), pos_integer, map, map, map}) :: map
   def compose(draft, {level, timestamp, body, custom, occurrence_data})
-      when is_map(draft) and is_binary(level) and is_integer(timestamp) and timestamp > 0 and
-             is_map(body) and is_map(custom) and is_map(occurrence_data) do
+      when is_map(draft) and is_binary(level) and is_integer(timestamp) and timestamp > 0 and is_map(body) and
+             is_map(custom) and is_map(occurrence_data) do
     Map.update!(draft, "data", fn data ->
       data
       |> Map.merge(occurrence_data)
@@ -47,8 +46,7 @@ defmodule Rollbax.Item do
   of the reported exception. `stacktrace` is the stacktrace of the error.
   """
   @spec exception_body(String.t(), String.t(), [any]) :: map
-  def exception_body(class, message, stacktrace)
-      when is_binary(class) and is_binary(message) and is_list(stacktrace) do
+  def exception_body(class, message, stacktrace) when is_binary(class) and is_binary(message) and is_list(stacktrace) do
     %{
       "trace" => %{
         "frames" => stacktrace_to_frames(stacktrace),
@@ -114,13 +112,11 @@ defmodule Rollbax.Item do
   end
 
   defp stacktrace_entry_to_frame({fun, arity, location}) when is_integer(arity) do
-    %{"method" => Exception.format_fa(fun, arity)}
-    |> put_location(location)
+    put_location(%{"method" => Exception.format_fa(fun, arity)}, location)
   end
 
   defp stacktrace_entry_to_frame({fun, arity, location}) when is_list(arity) do
-    %{"method" => Exception.format_fa(fun, length(arity)), "args" => Enum.map(arity, &inspect/1)}
-    |> put_location(location)
+    put_location(%{"method" => Exception.format_fa(fun, length(arity)), "args" => Enum.map(arity, &inspect/1)}, location)
   end
 
   defp maybe_format_application(module) do
@@ -155,12 +151,12 @@ defmodule Rollbax.Item do
     end
   end
 
-  defp host() do
+  defp host do
     {:ok, host} = :inet.gethostname()
     List.to_string(host)
   end
 
-  defp notifier() do
+  defp notifier do
     %{
       "name" => "Rollbax",
       "version" => unquote(Mix.Project.config()[:version])

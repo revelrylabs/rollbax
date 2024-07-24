@@ -11,6 +11,8 @@ defmodule Rollbax.LoggerHandler do
   This allows customizing and processing of events via reporters before sending to Rollbar.
   """
 
+  require Logger
+
   @doc """
   Handle a log message
   """
@@ -57,6 +59,12 @@ defmodule Rollbax.LoggerHandler do
       :ignore ->
         :ok
     end
+  end
+
+  defp run_reporters([_ | _], event) do
+    # I think all messages will have a the format of {:string, msg} as defined above: but just in case
+    Logger.error("Rollbax.LoggerHandler: Unexpected event format: #{inspect(event)}")
+    :ok
   end
 
   # If no reporter ignored or reported this event, then we're gonna report this

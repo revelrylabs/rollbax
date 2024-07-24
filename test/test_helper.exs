@@ -11,21 +11,10 @@ defmodule ExUnit.RollbaxCase do
     end
   end
 
-  def start_rollbax_client(
-        token,
-        env,
-        custom \\ %{},
-        api_endpoint \\ "http://localhost:4004",
-        proxy \\ nil
-      ) do
+  def start_rollbax_client(token, env, custom \\ %{}, api_endpoint \\ "http://localhost:4004", proxy \\ nil) do
     start_supervised(
       {Rollbax.Client,
-       api_endpoint: api_endpoint,
-       access_token: token,
-       environment: env,
-       enabled: true,
-       custom: custom,
-       proxy: proxy}
+       api_endpoint: api_endpoint, access_token: token, environment: env, enabled: true, custom: custom, proxy: proxy}
     )
   end
 
@@ -45,24 +34,24 @@ defmodule ExUnit.RollbaxCase do
     end)
   end
 
-  def assert_performed_request() do
+  def assert_performed_request do
     assert_receive {:api_request, body}
     Jason.decode!(body)
   end
 end
 
 defmodule RollbarAPI do
+  import Conn
+
   alias Plug.Conn
   alias Plug.Cowboy
-
-  import Conn
 
   def start(pid, port \\ 4004) do
     Application.ensure_all_started(:telemetry)
     Cowboy.http(__MODULE__, [test: pid], port: port)
   end
 
-  def stop() do
+  def stop do
     Process.sleep(100)
     Cowboy.shutdown(__MODULE__.HTTP)
     Process.sleep(100)

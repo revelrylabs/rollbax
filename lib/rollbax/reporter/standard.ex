@@ -17,10 +17,7 @@ defmodule Rollbax.Reporter.Standard do
   end
 
   # Handles exceptions raised by GenServer callbacks
-  defp format_exception(
-         ["GenServer ", pid, " terminating", details | last_message_parts] = msg,
-         meta
-       ) do
+  defp format_exception(["GenServer ", pid, " terminating", details | last_message_parts] = msg, meta) do
     last_message = parse_last_message(last_message_parts)
     {class, message} = parse_exception(meta[:crash_reason], details, msg)
 
@@ -37,14 +34,7 @@ defmodule Rollbax.Reporter.Standard do
 
   # Handles exceptions raised by GenEvent handlers
   defp format_exception(
-         [
-           ":gen_event handler ",
-           module,
-           " installed in ",
-           _pid,
-           " terminating",
-           details | last_message_parts
-         ] = msg,
+         [":gen_event handler ", module, " installed in ", _pid, " terminating", details | last_message_parts] = msg,
          meta
        ) do
     last_message = parse_last_message(last_message_parts)
@@ -63,10 +53,7 @@ defmodule Rollbax.Reporter.Standard do
   end
 
   # Handles exceptions raised by Task callbacks
-  defp format_exception(
-         ["Task " <> _ = _error, details | function_details] = msg,
-         meta
-       ) do
+  defp format_exception(["Task " <> _ = _error, details | function_details] = msg, meta) do
     {function, args} = parse_function_and_args(function_details)
     {class, message} = parse_exception(meta[:crash_reason], details, msg)
 
@@ -84,10 +71,7 @@ defmodule Rollbax.Reporter.Standard do
   end
 
   # Handles exceptions raised by processes
-  defp format_exception(
-         ["Process ", pid, " raised an exception" | error_details],
-         meta
-       ) do
+  defp format_exception(["Process ", pid, " raised an exception" | error_details], meta) do
     {message, name} =
       case meta[:crash_reason] do
         {exception, stacktrace} when is_exception(exception) and is_list(stacktrace) ->
@@ -139,8 +123,7 @@ defmodule Rollbax.Reporter.Standard do
     message
   end
 
-  defp parse_last_message([_first | rest] = _message_parts),
-    do: parse_last_message(rest)
+  defp parse_last_message([_first | rest] = _message_parts), do: parse_last_message(rest)
 
   defp parse_last_message(_), do: nil
 
@@ -151,8 +134,7 @@ defmodule Rollbax.Reporter.Standard do
     _ -> {nil, nil}
   end
 
-  defp parse_function_and_args([_first | rest] = _message_parts),
-    do: parse_function_and_args(rest)
+  defp parse_function_and_args([_first | rest] = _message_parts), do: parse_function_and_args(rest)
 
   defp parse_function_and_args(_), do: {nil, nil}
 
