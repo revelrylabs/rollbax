@@ -269,6 +269,31 @@ defmodule Rollbax.LoggerTest do
     purge_module(MyModule)
   end
 
+  test "captures supervised task termination" do
+    defmodule TestSupervisor do
+      use Supervisor
+
+      def start_link(_) do
+        Supervisor.start_link(__MODULE__, :ok, name: __MODULE__)
+      end
+
+      def init(:ok) do
+        children = [
+          {Task, fn -> raise "boom" end}
+        ]
+        Supervisor.init(children, strategy: :one_for_one)
+      end
+    end
+
+    capture_log(fn ->
+      {:ok, _pid} = TestSupervisor.start_link([])
+      data = assert_performed_request()["data"]
+      assert data["body"]["trace"]["exception"] == %{"class" => "Task terminating (RuntimeError)", "message" => "boom"}
+    end)
+  after
+    purge_module(TestSupervisor)
+  end
+
   if List.to_integer(:erlang.system_info(:otp_release)) < 19 do
     test "gen_fsm terminating" do
       defmodule Elixir.MyGenFsm do
