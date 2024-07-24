@@ -52,7 +52,7 @@ defmodule Rollbax.Client do
       event = {Atom.to_string(level), timestamp, body, custom, occurrence_data}
       GenServer.cast(pid, {:emit, event})
     else
-      Logger.warn(
+      Logger.warning(
         "(Rollbax) Trying to report an exception but the :rollbax application has not been started",
         rollbax: false
       )
