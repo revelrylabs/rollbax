@@ -8,7 +8,7 @@ defmodule Rollbax.Reporter.Standard do
 
   def handle_event(:error, {_Logger, msg, _timestamp, meta}) do
     msg
-    |> process_error()
+    |> unwrap_message()
     |> format_exception(meta)
   end
 
@@ -112,14 +112,15 @@ defmodule Rollbax.Reporter.Standard do
     :next
   end
 
-  # Plug errors seem to have an extra level of nesting that we need to remove before
-  # parsing the message.
-  defp process_error(error) when is_list(hd(error)) do
-    hd(error)
+  # Sometimes the main message is in a list with extraneous information
+  # and we need to parse the message out of it.
+
+  defp unwrap_message([message | _rest]) when is_list(message) do
+    message
   end
 
-  defp process_error(error) do
-    error
+  defp unwrap_message(message) do
+    message
   end
 
   defp stacktrace({_, trace} = _crash_reason) when is_list(trace), do: trace
