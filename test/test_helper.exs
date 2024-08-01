@@ -11,10 +11,21 @@ defmodule ExUnit.RollbaxCase do
     end
   end
 
-  def start_rollbax_client(token, env, custom \\ %{}, api_endpoint \\ "http://localhost:4004", proxy \\ nil) do
+  def start_rollbax_client(
+        token,
+        env,
+        custom \\ %{},
+        api_endpoint \\ "http://localhost:4004",
+        proxy \\ nil
+      ) do
     start_supervised(
       {Rollbax.Client,
-       api_endpoint: api_endpoint, access_token: token, environment: env, enabled: true, custom: custom, proxy: proxy}
+       api_endpoint: api_endpoint,
+       access_token: token,
+       environment: env,
+       enabled: true,
+       custom: custom,
+       proxy: proxy}
     )
   end
 

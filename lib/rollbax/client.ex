@@ -47,7 +47,8 @@ defmodule Rollbax.Client do
   end
 
   def emit(level, timestamp, body, custom, occurrence_data)
-      when is_atom(level) and is_integer(timestamp) and timestamp > 0 and is_map(body) and is_map(custom) and
+      when is_atom(level) and is_integer(timestamp) and timestamp > 0 and is_map(body) and
+             is_map(custom) and
              is_map(occurrence_data) do
     if pid = Process.whereis(@name) do
       event = {Atom.to_string(level), timestamp, body, custom, occurrence_data}
@@ -163,7 +164,11 @@ defmodule Rollbax.Client do
     %{state | hackney_responses: Map.delete(responses, ref)}
   end
 
-  defp handle_hackney_response(ref, {:status, code, description}, %{hackney_responses: responses} = state) do
+  defp handle_hackney_response(
+         ref,
+         {:status, code, description},
+         %{hackney_responses: responses} = state
+       ) do
     if code != 200 do
       Logger.error("(Rollbax) unexpected API status: #{code}/#{description}")
     end
@@ -184,7 +189,8 @@ defmodule Rollbax.Client do
     end
   end
 
-  defp handle_hackney_response(ref, body_chunk, %{hackney_responses: responses} = state) when is_binary(body_chunk) do
+  defp handle_hackney_response(ref, body_chunk, %{hackney_responses: responses} = state)
+       when is_binary(body_chunk) do
     responses =
       Map.update!(responses, ref, fn {code, body} ->
         {code, [body | body_chunk]}

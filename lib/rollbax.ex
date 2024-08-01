@@ -190,7 +190,8 @@ defmodule Rollbax do
   """
   @spec report(:error | :exit | :throw, any, [any], map, map) :: :ok
   def report(kind, value, stacktrace, custom \\ %{}, occurrence_data \\ %{})
-      when kind in [:error, :exit, :throw] and is_list(stacktrace) and is_map(custom) and is_map(occurrence_data) do
+      when kind in [:error, :exit, :throw] and is_list(stacktrace) and is_map(custom) and
+             is_map(occurrence_data) do
     {class, message} = Rollbax.Item.exception_class_and_message(kind, value)
 
     report_exception(%Rollbax.Exception{
