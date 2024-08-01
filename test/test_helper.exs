@@ -41,9 +41,7 @@ defmodule ExUnit.RollbaxCase do
 end
 
 defmodule RollbarAPI do
-  import Conn
-
-  alias Plug.Conn
+  import Plug.Conn
   alias Plug.Cowboy
 
   def start(pid, port \\ 4004) do
@@ -61,7 +59,7 @@ defmodule RollbarAPI do
     Keyword.fetch!(opts, :test)
   end
 
-  def call(%Conn{method: "POST"} = conn, test) do
+  def call(%Plug.Conn{method: "POST"} = conn, test) do
     {:ok, body, conn} = read_body(conn)
     Process.sleep(30)
     send(test, {:api_request, body})
