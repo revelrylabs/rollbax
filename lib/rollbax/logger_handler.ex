@@ -59,6 +59,22 @@ defmodule Rollbax.LoggerHandler do
     end
   end
 
+  defp run_reporters([reporter | rest], %{level: level, meta: meta, msg: {message, args}} = event)
+       when is_list(message) and is_list(args) do
+    formatted_msg = :io_lib.format(message, args) |> IO.iodata_to_binary()
+
+    case reporter.handle_event(level, {Logger, formatted_msg, meta[:time], meta}) do
+      %Rollbax.Exception{} = exception ->
+        Rollbax.report_exception(exception)
+
+      :next ->
+        run_reporters(rest, event)
+
+      :ignore ->
+        :ok
+    end
+  end
+
   defp run_reporters([_ | _], event) do
     # remove or convert to a Logger message after this has been tested extensively
     IO.inspect("UNHANDLED EVENT SHAPE: #{inspect(event)}")
