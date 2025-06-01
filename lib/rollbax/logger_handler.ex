@@ -46,6 +46,7 @@ defmodule Rollbax.LoggerHandler do
     |> Map.put_new(:initialized, true)
   end
 
+  # Handles simple strings, eg "Connection failed: timeout"
   defp run_reporters([reporter | rest], %{level: level, meta: meta, msg: {:string, msg}} = event) do
     case reporter.handle_event(level, {Logger, msg, meta[:time], meta}) do
       %Rollbax.Exception{} = exception ->
@@ -59,6 +60,24 @@ defmodule Rollbax.LoggerHandler do
     end
   end
 
+  # Handles format strings, eg {~c\"sweep old spans: ttl=~p num_dropped=~p\", [1800000000000, 8]}
+  defp run_reporters([reporter | rest], %{level: level, meta: meta, msg: {message, args}} = event)
+       when is_list(message) and is_list(args) do
+    formatted_msg = :io_lib.format(message, args) |> IO.iodata_to_binary()
+
+    case reporter.handle_event(level, {Logger, formatted_msg, meta[:time], meta}) do
+      %Rollbax.Exception{} = exception ->
+        Rollbax.report_exception(exception)
+
+      :next ->
+        run_reporters(rest, event)
+
+      :ignore ->
+        :ok
+    end
+  end
+
+  # Handles unknown message formats
   defp run_reporters([_ | _], event) do
     # remove or convert to a Logger message after this has been tested extensively
     IO.inspect("UNHANDLED EVENT SHAPE: #{inspect(event)}")
